@@ -2,7 +2,7 @@
 #include <DHT.h>
 #include <NimBLEDevice.h>
 
-// WiFi login
+// WiFi credentials
 const char* ssid = "MD iPhone";
 const char* password = "mtest001_";
 
@@ -17,9 +17,22 @@ DHT dht(DHTPIN, DHTTYPE);
 
 int btDeviceCount = 0;
 
+struct BTDeviceInfo {
+  std::string name;
+  std::string address;
+  int rssi;
+};
+
+std::vector<BTDeviceInfo> btDevices;
+
 class BTAdvertisedDeviceCallbacks : public NimBLEAdvertisedDeviceCallbacks {
   void onResult(NimBLEAdvertisedDevice* advertisedDevice) {
     btDeviceCount++;
+    BTDeviceInfo dev;
+    dev.name = advertisedDevice->getName().length() > 0 ? advertisedDevice->getName() : "(ukendt)";
+    dev.address = advertisedDevice->getAddress().toString();
+    dev.rssi = advertisedDevice->getRSSI();
+    btDevices.push_back(dev);
   }
 };
 
@@ -48,7 +61,7 @@ void setup() {
   digitalWrite(RED_LED, LOW);
   digitalWrite(GREEN_LED, LOW);
 
-  // Init Bluetooth scanning
+  // Init Bluetooth scanner
   NimBLEDevice::init("");
   pBLEScan = NimBLEDevice::getScan();
   pBLEScan->setAdvertisedDeviceCallbacks(new BTAdvertisedDeviceCallbacks(), false);
@@ -77,20 +90,37 @@ void loop() {
 
     // Scan WiFi
     int wifiCount = WiFi.scanNetworks();
-
-    // Scan Bluetooth i 5 sekunder
-    btDeviceCount = 0;
-    pBLEScan->start(5, false);
-    pBLEScan->clearResults(); // frigiv hukommelse
-
-    // Print resultater
     Serial.printf("🌡 Temp: %.1f °C  💧 Fugt: %.1f %%\n", temperature, humidity);
     Serial.printf("📶 WiFi enheder: %d\n", wifiCount);
+
+    for (int i = 0; i < wifiCount; ++i) {
+      Serial.printf("  [%d] SSID: %s, MAC: %s, RSSI: %d dBm, Channel: %d\n",
+        i + 1,
+        WiFi.SSID(i).c_str(),
+        WiFi.BSSIDstr(i).c_str(),
+        WiFi.RSSI(i),
+        WiFi.channel(i));
+    }
+
+    // Scan Bluetooth
+    btDevices.clear();
+    btDeviceCount = 0;
+    pBLEScan->start(5, false);
+    pBLEScan->clearResults();
+
     Serial.printf("🔵 Bluetooth enheder: %d\n", btDeviceCount);
+    for (size_t i = 0; i < btDevices.size(); ++i) {
+      Serial.printf("  [%d] Navn: %s, MAC: %s, RSSI: %d dBm\n",
+        (int)(i + 1),
+        btDevices[i].name.c_str(),
+        btDevices[i].address.c_str(),
+        btDevices[i].rssi);
+    }
   }
 
   delay(10000);
 }
   
-// The code is pretty simple. It connects to WiFi, reads the temperature and humidity from a DHT11 sensor, scans for WiFi networks, and scans for Bluetooth devices. 
-// The code is available on GitHub:
+//  The code is pretty straightforward. It connects to WiFi, reads the temperature and humidity from a DHT11 sensor, and then scans for WiFi and Bluetooth devices. 
+//  The Bluetooth scanning is done using the NimBLE library, which is a lightweight Bluetooth Low Energy (BLE) library for ESP32. 
+//  The code is also available on GitHub:
