@@ -1,4 +1,3 @@
-```markdown
 # IoT Persontælling & Indeklima -- ESP32 Projekt
 
 Dette projekt bruger en **ESP32** til at:
@@ -225,7 +224,6 @@ Martin's IoT-projekt
 #define MQTT_PORT 1884\
 #define MQTT_CLIENT_ID "esp32_sniffer"\
 #define MQTT_TOPIC "sniffer/data"
-```
 
 // Andre parametre som SAMPLE_INTERVAL_MS, BT_SCAN_DURATION_SEC, BUFFER_LIMIT, etc.
 
