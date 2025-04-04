@@ -1,0 +1,117 @@
+[
+    {
+      "id": "mqtt_in",
+      "type": "mqtt in",
+      "z": "esp32Flow",
+      "name": "ESP32 Data",
+      "topic": "sniffer/data",
+      "qos": "0",
+      "datatype": "json",
+      "broker": "broker_local",
+      "nl": false,
+      "rap": true,
+      "rh": 0,
+      "x": 140,
+      "y": 100,
+      "wires": [
+        [
+          "function_parse"
+        ]
+      ]
+    },
+    {
+      "id": "function_parse",
+      "type": "function",
+      "z": "esp32Flow",
+      "name": "Split Array -> Chart",
+      "func": "// msg.payload er et array af snapshots\n// Hvert snapshot er fx:\n// {\n//   \"timestamp\": 12345,\n//   \"temp\": 24.3,\n//   \"humidity\": 50.2,\n//   \"wifiCount\": 3,\n//   \"btCount\": 12\n// }\n\nlet outputMessages = [];\n\n// Gennemløb arrayet af snapshots\nmsg.payload.forEach(snapshot => {\n    // Her laver vi 4 separate messages:\n    // 1) wifiCount, 2) btCount, 3) temp, 4) humidity\n\n    // WiFi count\n    outputMessages.push({\n        topic: \"wifiCount\",\n        payload: snapshot.wifiCount,\n        timestamp: snapshot.timestamp\n    });\n\n    // BT count\n    outputMessages.push({\n        topic: \"btCount\",\n        payload: snapshot.btCount,\n        timestamp: snapshot.timestamp\n    });\n\n    // Temp\n    outputMessages.push({\n        topic: \"temp\",\n        payload: snapshot.temp,\n        timestamp: snapshot.timestamp\n    });\n\n    // Humidity\n    outputMessages.push({\n        topic: \"humidity\",\n        payload: snapshot.humidity,\n        timestamp: snapshot.timestamp\n    });\n});\n\nreturn [ outputMessages ];",
+      "outputs": 1,
+      "noerr": 0,
+      "initialize": "",
+      "finalize": "",
+      "libs": [],
+      "x": 360,
+      "y": 100,
+      "wires": [
+        [
+          "ui_chart"
+        ]
+      ]
+    },
+    {
+      "id": "ui_chart",
+      "type": "ui_chart",
+      "z": "esp32Flow",
+      "name": "ESP32 Chart",
+      "group": "ui_group",
+      "order": 1,
+      "width": 12,
+      "height": 6,
+      "label": "WiFi / BT / Temp / Hum",
+      "chartType": "line",
+      "legend": "true",
+      "xformat": "HH:mm:ss",
+      "interpolate": "linear",
+      "nodata": "Venter på data",
+      "dot": false,
+      "ymin": "0",
+      "ymax": "",
+      "removeOlder": "60",
+      "removeOlderPoints": "",
+      "removeOlderUnit": "3600",
+      "cutout": 0,
+      "useOneColor": false,
+      "colors": [
+        "#1f77b4",
+        "#ff7f0e",
+        "#2ca02c",
+        "#d62728"
+      ],
+      "useOldStyle": false,
+      "x": 560,
+      "y": 100,
+      "wires": [
+        [],
+        []
+      ]
+    },
+    {
+      "id": "broker_local",
+      "type": "mqtt-broker",
+      "name": "Local Mosquitto",
+      "broker": "localhost",
+      "port": "1884",
+      "clientid": "",
+      "usetls": false,
+      "protocolVersion": "4",
+      "keepalive": "60",
+      "cleansession": true,
+      "birthTopic": "",
+      "birthQos": "0",
+      "birthPayload": "",
+      "closeTopic": "",
+      "closeQos": "0",
+      "closePayload": "",
+      "willTopic": "",
+      "willQos": "0",
+      "willPayload": ""
+    },
+    {
+      "id": "ui_group",
+      "type": "ui_group",
+      "name": "ESP32 Dashboard",
+      "tab": "ui_tab",
+      "order": 1,
+      "disp": true,
+      "width": "12",
+      "collapse": false
+    },
+    {
+      "id": "ui_tab",
+      "type": "ui_tab",
+      "name": "IoT Monitoring",
+      "icon": "dashboard",
+      "disabled": false,
+      "hidden": false
+    }
+  ]
