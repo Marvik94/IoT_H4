@@ -1,11 +1,11 @@
 #pragma once
 
 // ========== WiFi ==========
-#define WIFI_SSID "MD iPhone"
-#define WIFI_PASS "mtest001_"
+#define WIFI_SSID "SSID"
+#define WIFI_PASS "PASS"
 
 // ========== MQTT ==========
-#define MQTT_SERVER "172.20.10.2" 
+#define MQTT_SERVER "SERVER IP" 
 #define MQTT_PORT 1884
 #define MQTT_CLIENT_ID "esp32_sniffer"
 #define MQTT_TOPIC "sniffer/data"
